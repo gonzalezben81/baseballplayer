@@ -17,38 +17,36 @@ Batting <- read_csv("Batting.csv")
 Pitching <- read_csv("Pitching.csv")
 
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(tags$head(includeScript("google-analytics.js")),
+
+ui <- fluidPage(
+  #tags$head(includeScript("google-analytics.js")),
    
    # Application title
    titlePanel("Baseball Player Information"),
    
-   # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-         # textInput("first","Player First Name",value = "Babe"),
-         # textInput("last","Player Last Name",value = "Ruth"),
          textInput(inputId = "name",label = "Player Name",value = "Babe Ruth" ),
          textOutput("given")
       ),
       
-      # Show a plot of the generated distribution
+      
       mainPanel(
         tabsetPanel(
-        tabPanel(title = "Player Info",tableOutput("distPlot")),
-        tabPanel(title = "Player Batting Statistics",dataTableOutput("statsplot")),
-        tabPanel(title = "Player Pitching Statistics",dataTableOutput("pitchplot"))
+        tabPanel(title = "Player Info",tableOutput("infoStats")),
+        tabPanel(title = "Player Batting Statistics",dataTableOutput("battingStats")),
+        tabPanel(title = "Player Pitching Statistics",dataTableOutput("pitchStats"))
         
       ))
    )
 )
 
-# Define server logic required to draw a histogram
+
 server <- function(input, output) {
    
-   output$distPlot <- renderTable({
+  ### Renders the table that displays the players basic information
+   output$infoStats <- renderTable({
      strsplit(x = input$name,split = " ")
-    # playerinfo <- subset(Master,nameFirst == input$first & nameLast == input$last)
     playerinfo <-  subset(Master,NAMES == input$name)
     day <- playerinfo$birthDay
     month <- as.character(playerinfo$birthMonth)
@@ -64,20 +62,21 @@ server <- function(input, output) {
     final <- as.character(playerinfo$finalGame)
     
     
-    
     infoplayer <- cbind(day,month,year,city,state,country,weight,height,throws,bats,debut,final)
     
     playerdata <- as.data.frame(infoplayer)
+    ##Renames the column names that are displayed in the interactive table
     colnames(playerdata) <- c("Day","Month","Year","City","State","Country","Weight","Height","Throws","Bats","Debut","Final Game")
     playerdata
+    
    })
    
-   output$statsplot <- renderDataTable({
+   ##Creates the interactive table returns the player's batting statistics
+   output$battingStats <- renderDataTable({
      
      
-    #playerinfo2 <- subset(Master,nameFirst == input$first & nameLast == input$last)
-     
-    playerinfo2 <- subset(Master,NAMES == input$name)
+     playerinfo2 <- subset(Master,NAMES == input$name)
+    
      playerone <- playerinfo2$playerID
      
      playerstats <- subset(Batting,Batting$playerID == playerone)
@@ -92,10 +91,10 @@ server <- function(input, output) {
      
         })
    
-   output$pitchplot <- renderDataTable({
+   ###Renders the pitching statistics table that the user can search
+   output$pitchStats <- renderDataTable({
      
      
-     #playerinfo <- subset(Master,nameFirst == input$first & nameLast == input$last)
      playerinfo <- subset(Master,NAMES == input$name)
      
      player <- playerinfo$playerID
